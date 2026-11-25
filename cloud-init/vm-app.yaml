@@ -1,0 +1,17 @@
+#cloud-config
+# vm-app: Docker telepítése, a repó letöltése és a konténerek indítása az első indításkor.
+# A GITHUB_FELHASZNALO részt írjátok át a saját GitHub-felhasználónevetekre, mielőtt beillesztitek!
+package_update: true
+package_upgrade: true
+packages:
+  - git
+runcmd:
+  - curl -fsSL https://get.docker.com | sh
+  - usermod -aG docker azureuser
+  - git clone https://github.com/GITHUB_FELHASZNALO/itarch-azure-projekt.git /opt/projekt
+  - echo "DB_PASSWORD=$(openssl rand -hex 16)" > /opt/projekt/.env
+  - chmod 600 /opt/projekt/.env
+  - cd /opt/projekt && docker compose up -d --build
+  - ufw default deny incoming
+  - ufw allow from 10.10.1.0/24 to any port 22 proto tcp
+  - ufw --force enable
